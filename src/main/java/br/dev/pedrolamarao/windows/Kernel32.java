@@ -27,10 +27,18 @@ public final class Kernel32
 	
 	public static final int ERROR_IO_PENDING = 997;
 	
+	public static final int FILE_FLAG_BACKUP_SEMANTICS = 0x02000000;
+	
 	public static final int FILE_FLAG_OVERLAPPED = 0x40000000;
+	
+	public static final int FILE_NOTIFY_CHANGE_FILE_NAME = 0x00000001;
     
-    public static final int FILE_SHARE_READ = 1;
+    public static final int FILE_SHARE_DELETE = 0x00000004;
     
+    public static final int FILE_SHARE_READ = 0x00000001;
+
+    public static final int FILE_SHARE_WRITE = 0x00000002;
+
     public static final int GENERIC_READ = 0x80000000;
 
     public static final MemoryAddress INVALID_HANDLE_VALUE = MemoryAddress.ofLong(-1);
@@ -77,6 +85,24 @@ public final class Kernel32
     	public static final VarHandle offset = LAYOUT.varHandle(long.class, groupElement("union"), groupElement("offset"));
     }
     
+    public enum READ_DIRECTORY_NOTIFY_INFORMATION_CLASS
+    {
+    	ReadDirectoryNotifyInformation(0),
+    	ReadDirectoryNotifyExtendedInformation(1);
+    	
+    	int value;
+    	
+    	READ_DIRECTORY_NOTIFY_INFORMATION_CLASS (int value)
+    	{
+    		this.value = value;
+    	}
+    	
+    	public int value ()
+    	{
+    		return value;
+    	}
+    }
+    
     // methods
 	
 	public static final MethodHandle cancelIoEx;
@@ -96,6 +122,8 @@ public final class Kernel32
 	public static final MethodHandle lockFileEx;
 	
 	public static final MethodHandle postQueuedCompletionStatus;
+
+	public static final MethodHandle readDirectoryChangesW;
 	
 	public static final MethodHandle readDirectoryChangesExW;
 	
@@ -161,6 +189,12 @@ public final class Kernel32
 			kernel32.lookup("PostQueuedCompletionStatus").get(),
 			methodType(int.class, MemoryAddress.class, int.class, MemoryAddress.class, MemoryAddress.class),
 			FunctionDescriptor.of(C_INT, C_POINTER, C_INT, C_POINTER, C_POINTER)
+		);
+		
+		readDirectoryChangesW = linker.downcallHandle(
+			kernel32.lookup("ReadDirectoryChangesW").get(),
+			methodType(int.class, MemoryAddress.class, MemoryAddress.class, int.class, int.class, int.class, MemoryAddress.class, MemoryAddress.class, MemoryAddress.class),
+			FunctionDescriptor.of(C_INT, C_POINTER, C_POINTER, C_INT, C_INT, C_INT, C_POINTER, C_POINTER, C_POINTER)
 		);
 		
 		readDirectoryChangesExW = linker.downcallHandle(
