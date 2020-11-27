@@ -3,7 +3,7 @@ package br.dev.pedrolamarao.windows;
 import static java.lang.invoke.MethodType.methodType;
 import static jdk.incubator.foreign.CLinker.C_CHAR;
 import static jdk.incubator.foreign.CLinker.C_INT;
-import static jdk.incubator.foreign.CLinker.C_LONGLONG;
+import static jdk.incubator.foreign.CLinker.C_LONG_LONG;
 import static jdk.incubator.foreign.CLinker.C_POINTER;
 import static jdk.incubator.foreign.MemoryLayout.ofStruct;
 import static jdk.incubator.foreign.MemoryLayout.ofUnion;
@@ -76,7 +76,7 @@ public final class Kernel32
 					C_INT.withName("offsetLow"),
 					C_INT.withName("offsetHigh")
 				),
-				C_LONGLONG.withName("offset"),
+				C_LONG_LONG.withName("offset"),
 				C_POINTER.withName("pointer")
 			).withName("union"),
 			C_POINTER.withName("event")

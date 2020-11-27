@@ -1,4 +1,4 @@
-Date: 2020-11-23
+Date: 2020-11-27
 
 # Summary
 
@@ -8,7 +8,7 @@ This project provides an experimental foreign function interface to Windows' API
 
 Requirements:
 
-- Project Panama early access build
+- JDK 16 early access build 26
 
 Procedure:
 
