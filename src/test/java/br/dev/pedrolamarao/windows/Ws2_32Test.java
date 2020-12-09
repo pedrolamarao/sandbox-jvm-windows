@@ -10,7 +10,6 @@ import org.junit.jupiter.api.Test;
 
 import jdk.incubator.foreign.CLinker;
 import jdk.incubator.foreign.MemoryAccess;
-import jdk.incubator.foreign.MemoryAddress;
 import jdk.incubator.foreign.NativeScope;
 
 public final class Ws2_32Test
@@ -20,32 +19,22 @@ public final class Ws2_32Test
 	{
 		try (var scope = NativeScope.unboundedScope())
 		{
-			final var host = CLinker.toCString("localhost", scope);
-			final var service = CLinker.toCString("http");
-			final var hint = scope.allocate(Ws2_32.addrinfo.LAYOUT).fill((byte) 0);
-			final var addressRef = scope.allocate(CLinker.C_POINTER, (long) 0);
-
-			assertEquals(
-				0, 
-				(int) Ws2_32.getaddrinfo.invokeExact(host.address(), service.address(), hint, addressRef.address())
-			);
+			final var address = scope.allocate(Ws2_32.sockaddr_in.LAYOUT);
+			address.fill((byte) 0);
+			Ws2_32.sockaddr_in.family.set(address, (short) Ws2_32.AF_INET);
 			
-			final var address = MemoryAccess.getAddress(addressRef).asSegmentRestricted(Ws2_32.addrinfo.LAYOUT.byteSize());
-			
-			final var handle = (int) Ws2_32.socket.invokeExact(((int) Ws2_32.addrinfo.family.get(address)), ((int) Ws2_32.addrinfo.socktype.get(address)), ((int) Ws2_32.addrinfo.protocol.get(address)));
+			final var handle = (int) Ws2_32.socket.invokeExact(Ws2_32.AF_INET, Ws2_32.SOCK_STREAM, Ws2_32.IPPROTO_TCP);
 			assertNotEquals(-1, handle);
 			
 			assertEquals(
 				0,
-				(int) Ws2_32.bind.invokeExact(handle, MemoryAddress.ofLong((long) Ws2_32.addrinfo.addr.get(address)), (int) ((long) Ws2_32.addrinfo.addrlen.get(address)))
+				(int) Ws2_32.bind.invokeExact(handle, address.address(), (int) address.byteSize())
 			);
 			
 			assertEquals(
 				0,
 				(int) Ws2_32.closesocket.invokeExact(handle)
 			);
-			
-			Ws2_32.freeaddrinfo.invokeExact(address.address());
 		}
 	}
 	
@@ -131,24 +120,16 @@ public final class Ws2_32Test
 	{
 		try (var scope = NativeScope.unboundedScope())
 		{
-			final var host = CLinker.toCString("localhost", scope);
-			final var service = CLinker.toCString("http");
-			final var hint = scope.allocate(Ws2_32.addrinfo.LAYOUT).fill((byte) 0);
-			final var addressRef = scope.allocate(CLinker.C_POINTER, (long) 0);
-
-			assertEquals(
-				0, 
-				(int) Ws2_32.getaddrinfo.invokeExact(host.address(), service.address(), hint, addressRef.address())
-			);
+			final var address = scope.allocate(Ws2_32.sockaddr_in.LAYOUT);
+			address.fill((byte) 0);
+			Ws2_32.sockaddr_in.family.set(address, (short) Ws2_32.AF_INET);
 			
-			final var address = MemoryAccess.getAddress(addressRef).asSegmentRestricted(Ws2_32.addrinfo.LAYOUT.byteSize());
-			
-			final var handle = (int) Ws2_32.socket.invokeExact(((int) Ws2_32.addrinfo.family.get(address)), ((int) Ws2_32.addrinfo.socktype.get(address)), ((int) Ws2_32.addrinfo.protocol.get(address)));
+			final var handle = (int) Ws2_32.socket.invokeExact(Ws2_32.AF_INET, Ws2_32.SOCK_STREAM, Ws2_32.IPPROTO_TCP);
 			assertNotEquals(-1, handle);
 			
 			assertEquals(
 				0,
-				(int) Ws2_32.bind.invokeExact(handle, MemoryAddress.ofLong((long) Ws2_32.addrinfo.addr.get(address)), (int) ((long) Ws2_32.addrinfo.addrlen.get(address)))
+				(int) Ws2_32.bind.invokeExact(handle, address.address(), (int) address.byteSize())
 			);
 			
 			assertEquals(
@@ -160,8 +141,6 @@ public final class Ws2_32Test
 				0,
 				(int) Ws2_32.closesocket.invokeExact(handle)
 			);
-			
-			Ws2_32.freeaddrinfo.invokeExact(address.address());
 		}
 	}
 	
