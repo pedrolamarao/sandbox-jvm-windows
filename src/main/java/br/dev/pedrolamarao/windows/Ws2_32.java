@@ -18,6 +18,7 @@ import jdk.incubator.foreign.GroupLayout;
 import jdk.incubator.foreign.LibraryLookup;
 import jdk.incubator.foreign.MemoryAddress;
 import jdk.incubator.foreign.MemoryLayout;
+import jdk.incubator.foreign.MemorySegment;
 import jdk.incubator.foreign.ValueLayout;
 
 public final class Ws2_32
@@ -52,7 +53,7 @@ public final class Ws2_32
 	
 	public static final class addrinfo
 	{
-		public static final MemoryLayout LAYOUT = MemoryLayout.ofStruct(
+		public static final GroupLayout LAYOUT = MemoryLayout.ofStruct(
 			C_INT.withName("flags"),
 			C_INT.withName("family"),
 			C_INT.withName("socktype"),
@@ -185,8 +186,8 @@ public final class Ws2_32
 		
     	getaddrinfo = linker.downcallHandle(
     		library.lookup("getaddrinfo").get(),
-			MethodType.methodType(int.class, MemoryAddress.class, MemoryAddress.class, MemoryAddress.class, MemoryAddress.class),
-			FunctionDescriptor.of(C_INT, C_POINTER, C_POINTER, C_POINTER, C_POINTER)
+			MethodType.methodType(int.class, MemoryAddress.class, MemoryAddress.class, MemorySegment.class, MemoryAddress.class),
+			FunctionDescriptor.of(C_INT, C_POINTER, C_POINTER, addrinfo.LAYOUT, C_POINTER)
 		);
 		
     	getnameinfo = linker.downcallHandle(

@@ -27,7 +27,7 @@ public final class Ws2_32Test
 
 			assertEquals(
 				0, 
-				(int) Ws2_32.getaddrinfo.invokeExact(host.address(), service.address(), hint.address(), addressRef.address())
+				(int) Ws2_32.getaddrinfo.invokeExact(host.address(), service.address(), hint, addressRef.address())
 			);
 			
 			final var address = MemoryAccess.getAddress(addressRef).asSegmentRestricted(Ws2_32.addrinfo.LAYOUT.byteSize());
@@ -61,7 +61,7 @@ public final class Ws2_32Test
 
 			assertEquals(
 				0, 
-				(int) Ws2_32.getaddrinfo.invokeExact(host.address(), service.address(), hint.address(), addressRef.address())
+				(int) Ws2_32.getaddrinfo.invokeExact(host.address(), service.address(), hint, addressRef.address())
 			);
 			
 			final var address = MemoryAccess.getAddress(addressRef);
@@ -138,7 +138,7 @@ public final class Ws2_32Test
 
 			assertEquals(
 				0, 
-				(int) Ws2_32.getaddrinfo.invokeExact(host.address(), service.address(), hint.address(), addressRef.address())
+				(int) Ws2_32.getaddrinfo.invokeExact(host.address(), service.address(), hint, addressRef.address())
 			);
 			
 			final var address = MemoryAccess.getAddress(addressRef).asSegmentRestricted(Ws2_32.addrinfo.LAYOUT.byteSize());
