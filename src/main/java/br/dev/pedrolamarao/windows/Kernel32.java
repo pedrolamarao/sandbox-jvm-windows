@@ -15,6 +15,7 @@ import java.lang.invoke.VarHandle;
 
 import jdk.incubator.foreign.CLinker;
 import jdk.incubator.foreign.FunctionDescriptor;
+import jdk.incubator.foreign.GroupLayout;
 import jdk.incubator.foreign.LibraryLookup;
 import jdk.incubator.foreign.MemoryAddress;
 import jdk.incubator.foreign.MemoryLayout;
@@ -51,7 +52,7 @@ public final class Kernel32
     
     public static final class FILE_NOTIFY_INFORMATION 
     {
-    	public static final MemoryLayout LAYOUT = MemoryLayout.ofStruct(
+    	public static final GroupLayout LAYOUT = MemoryLayout.ofStruct(
 			C_INT.withName("next"),
 			C_INT.withName("action"),
 			C_INT.withName("length"),
@@ -68,7 +69,7 @@ public final class Kernel32
     
     public static final class OVERLAPPED
     {
-    	public static final MemoryLayout LAYOUT = ofStruct(
+    	public static final GroupLayout LAYOUT = ofStruct(
 			C_POINTER, 
 			C_POINTER, 
 			ofUnion(
