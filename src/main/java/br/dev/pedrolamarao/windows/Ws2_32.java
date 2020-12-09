@@ -49,6 +49,8 @@ public final class Ws2_32
 
 	public static final int SOCK_DGRAM = 2;
 	
+	public static final int WSA_IO_PENDING = 997;
+	
 	// types
 	
 	public static final class addrinfo
@@ -160,6 +162,8 @@ public final class Ws2_32
 	
 	public static final MethodHandle socket;
 	
+	public static final MethodHandle WSAGetLastError;
+	
 	static
 	{
     	final var library = LibraryLookup.ofLibrary("Ws2_32");
@@ -212,6 +216,12 @@ public final class Ws2_32
 			library.lookup("socket").get(),
 			MethodType.methodType(int.class, int.class, int.class, int.class),
 			FunctionDescriptor.of(C_INT, C_INT, C_INT, C_INT)
+		);
+
+		WSAGetLastError = linker.downcallHandle(
+			library.lookup("WSAGetLastError").get(),
+			MethodType.methodType(int.class),
+			FunctionDescriptor.of(C_INT)
 		);
 	}
 }
