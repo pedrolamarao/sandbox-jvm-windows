@@ -1,6 +1,5 @@
 package br.dev.pedrolamarao.windows;
 
-import static jdk.incubator.foreign.CLinker.C_CHAR;
 import static jdk.incubator.foreign.CLinker.C_INT;
 import static jdk.incubator.foreign.CLinker.C_LONG;
 import static jdk.incubator.foreign.CLinker.C_LONG_LONG;
@@ -15,10 +14,11 @@ import java.nio.ByteOrder;
 
 import jdk.incubator.foreign.CLinker;
 import jdk.incubator.foreign.FunctionDescriptor;
+import jdk.incubator.foreign.GroupLayout;
 import jdk.incubator.foreign.LibraryLookup;
 import jdk.incubator.foreign.MemoryAddress;
 import jdk.incubator.foreign.MemoryLayout;
-import jdk.incubator.foreign.MemorySegment;
+import jdk.incubator.foreign.ValueLayout;
 
 public final class Ws2_32
 {
@@ -78,17 +78,17 @@ public final class Ws2_32
 	
 	public static final class in_addr
 	{
-		public static final MemoryLayout LAYOUT = MemoryLayout.ofSequence(8, C_CHAR);
+		public static final ValueLayout LAYOUT = MemoryLayout.ofValueBits(32, ByteOrder.BIG_ENDIAN);
 	}
 	
 	public static final class in6_addr
 	{
-		public static final MemoryLayout LAYOUT = MemoryLayout.ofSequence(16, C_CHAR);
+		public static final ValueLayout LAYOUT = MemoryLayout.ofValueBits(128, ByteOrder.BIG_ENDIAN);
 	}
 	
 	public static final class sockaddr
 	{
-		public static final MemoryLayout LAYOUT = MemoryLayout.ofStruct(
+		public static final GroupLayout LAYOUT = MemoryLayout.ofStruct(
 			C_SHORT.withName("family"),
 			MemoryLayout.ofValueBits(112, ByteOrder.nativeOrder()).withName("zero")
 		);
@@ -98,7 +98,7 @@ public final class Ws2_32
 	
 	public static final class sockaddr_in
 	{
-		public static final MemoryLayout LAYOUT = MemoryLayout.ofStruct(
+		public static final GroupLayout LAYOUT = MemoryLayout.ofStruct(
 			C_SHORT.withName("family"),
 			C_SHORT.withName("port"),
 			in_addr.LAYOUT.withName("addr"),
@@ -109,12 +109,12 @@ public final class Ws2_32
 
 		public static final VarHandle port = LAYOUT.varHandle(short.class, groupElement("port"));
 		
-		public static final VarHandle addr = LAYOUT.varHandle(MemorySegment.class, groupElement("addr"));
+		public static final VarHandle addr = LAYOUT.varHandle(int.class, groupElement("addr"));
 	}
 	
 	public static final class sockaddr_in6
 	{
-		public static final MemoryLayout LAYOUT = MemoryLayout.ofStruct(
+		public static final GroupLayout LAYOUT = MemoryLayout.ofStruct(
 			C_SHORT.withName("family"),
 			C_SHORT.withName("port"),
 			C_LONG.withName("flowinfo"),
@@ -127,15 +127,13 @@ public final class Ws2_32
 		public static final VarHandle port = LAYOUT.varHandle(short.class, groupElement("port"));
 
 		public static final VarHandle flowInfo = LAYOUT.varHandle(int.class, groupElement("flowinfo"));
-		
-		public static final VarHandle addr = LAYOUT.varHandle(MemorySegment.class, groupElement("addr"));
 
 		public static final VarHandle scopeId = LAYOUT.varHandle(int.class, groupElement("scope_id"));
 	}
 	
 	public static final class sockaddr_storage
 	{
-		public static final MemoryLayout LAYOUT = MemoryLayout.ofStruct(
+		public static final GroupLayout LAYOUT = MemoryLayout.ofStruct(
 			C_SHORT.withName("family"),
 			MemoryLayout.ofValueBits(1008, ByteOrder.nativeOrder()).withName("zero")
 		);
@@ -154,6 +152,8 @@ public final class Ws2_32
 	public static final MethodHandle getaddrinfo;
 	
 	public static final MethodHandle getnameinfo;
+	
+	public static final MethodHandle getsockname;
 	
 	public static final MethodHandle listen;
 	
@@ -193,6 +193,12 @@ public final class Ws2_32
     		library.lookup("getnameinfo").get(),
 			MethodType.methodType(int.class, MemoryAddress.class, int.class, MemoryAddress.class, int.class, MemoryAddress.class, int.class, int.class),
 			FunctionDescriptor.of(C_INT, C_POINTER, C_INT, C_POINTER, C_INT, C_POINTER, C_INT, C_INT)
+		);
+		
+    	getsockname = linker.downcallHandle(
+    		library.lookup("getnameinfo").get(),
+			MethodType.methodType(int.class, MemoryAddress.class, int.class),
+			FunctionDescriptor.of(C_INT, C_POINTER, C_INT)
 		);
 
 		listen = linker.downcallHandle(
