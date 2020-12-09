@@ -3,6 +3,9 @@ package br.dev.pedrolamarao.windows;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
+
 import org.junit.jupiter.api.Test;
 
 import jdk.incubator.foreign.CLinker;
@@ -66,6 +69,54 @@ public final class Ws2_32Test
 			Ws2_32.freeaddrinfo.invokeExact(address.address());
 		}
 	}
+	
+	@Test
+	public void getnameinfo__sockaddr_in () throws Throwable
+	{
+		try (var scope = NativeScope.unboundedScope())
+		{
+			final var address = scope.allocate(Ws2_32.sockaddr_in.LAYOUT);
+			final var host = scope.allocate(1024);
+			final var service = scope.allocate(1024);
+			
+			address.fill((byte) 0);
+			host.fill((byte) 0);
+			service.fill((byte) 0);
+			
+			Ws2_32.sockaddr_in.family.set(address, (short) Ws2_32.AF_INET);
+			final var r0 = (int) Ws2_32.getnameinfo.invokeExact(address.address(), (int) address.byteSize(), host.address(), (int) host.byteSize(), service.address(), (int) service.byteSize(), (int) (Ws2_32.NI_NUMERICHOST | Ws2_32.NI_NUMERICSERV));
+
+			assertEquals(0, r0);
+			assertEquals("0.0.0.0", CLinker.toJavaString(host));
+			assertEquals("0", CLinker.toJavaString(service));
+			
+			address.fill((byte) 0);
+			host.fill((byte) 0);
+			service.fill((byte) 0);
+			
+			Ws2_32.sockaddr_in.family.set(address, (short) Ws2_32.AF_INET);
+			Ws2_32.sockaddr_in.port.set(address, networkShort((short) 80));
+			final var r1 = (int) Ws2_32.getnameinfo.invokeExact(address.address(), (int) address.byteSize(), host.address(), (int) host.byteSize(), service.address(), (int) service.byteSize(), (int) (Ws2_32.NI_NUMERICHOST | Ws2_32.NI_NUMERICSERV));
+
+			assertEquals(0, r1);
+			assertEquals("0.0.0.0", CLinker.toJavaString(host));
+			assertEquals("80", CLinker.toJavaString(service));
+			
+			address.fill((byte) 0);
+			host.fill((byte) 0);
+			service.fill((byte) 0);
+			
+			Ws2_32.sockaddr_in.family.set(address, (short) Ws2_32.AF_INET);
+			Ws2_32.sockaddr_in.port.set(address, networkShort((short) 443));
+			Ws2_32.sockaddr_in.addr.set(address, networkInt(1));
+			final var r2 = (int) Ws2_32.getnameinfo.invokeExact(address.address(), (int) address.byteSize(), host.address(), (int) host.byteSize(), service.address(), (int) service.byteSize(), (int) (Ws2_32.NI_NUMERICHOST | Ws2_32.NI_NUMERICSERV));
+
+			assertEquals(0, r2);
+			assertEquals("0.0.0.1", CLinker.toJavaString(host));
+			assertEquals("443", CLinker.toJavaString(service));
+		}
+	}
+	
 	@Test
 	public void listen () throws Throwable
 	{
@@ -112,5 +163,15 @@ public final class Ws2_32Test
 		assertNotEquals(-1, handle);
 		final var r0 = (int) Ws2_32.closesocket.invokeExact(handle);
 		assertNotEquals(-1, r0);
+	}
+	
+	public static short networkShort (short value)
+	{
+		return ByteBuffer.allocate(Short.BYTES).order(ByteOrder.LITTLE_ENDIAN).putShort(0, value).order(ByteOrder.BIG_ENDIAN).getShort(0);
+	}
+	
+	public static int networkInt (int value)
+	{
+		return ByteBuffer.allocate(Integer.BYTES).order(ByteOrder.LITTLE_ENDIAN).putInt(0, value).order(ByteOrder.BIG_ENDIAN).getInt(0);
 	}
 }

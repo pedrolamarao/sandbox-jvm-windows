@@ -1,19 +1,24 @@
 package br.dev.pedrolamarao.windows;
 
+import static jdk.incubator.foreign.CLinker.C_CHAR;
 import static jdk.incubator.foreign.CLinker.C_INT;
+import static jdk.incubator.foreign.CLinker.C_LONG;
 import static jdk.incubator.foreign.CLinker.C_LONG_LONG;
 import static jdk.incubator.foreign.CLinker.C_POINTER;
+import static jdk.incubator.foreign.CLinker.C_SHORT;
 import static jdk.incubator.foreign.MemoryLayout.PathElement.groupElement;
 
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodType;
 import java.lang.invoke.VarHandle;
+import java.nio.ByteOrder;
 
 import jdk.incubator.foreign.CLinker;
 import jdk.incubator.foreign.FunctionDescriptor;
 import jdk.incubator.foreign.LibraryLookup;
 import jdk.incubator.foreign.MemoryAddress;
 import jdk.incubator.foreign.MemoryLayout;
+import jdk.incubator.foreign.MemorySegment;
 
 public final class Ws2_32
 {
@@ -34,6 +39,10 @@ public final class Ws2_32
 	public static final int IPPROTO_TCP = 6;
 
 	public static final int IPPROTO_UDP = 17;
+	
+	public static final int NI_NUMERICHOST = 0x02;
+	
+	public static final int NI_NUMERICSERV = 0x08;
 
 	public static final int SOCK_STREAM = 1;
 
@@ -67,6 +76,73 @@ public final class Ws2_32
 		public static final VarHandle addr = LAYOUT.varHandle(long.class, groupElement("addr"));
 	}
 	
+	public static final class in_addr
+	{
+		public static final MemoryLayout LAYOUT = MemoryLayout.ofSequence(8, C_CHAR);
+	}
+	
+	public static final class in6_addr
+	{
+		public static final MemoryLayout LAYOUT = MemoryLayout.ofSequence(16, C_CHAR);
+	}
+	
+	public static final class sockaddr
+	{
+		public static final MemoryLayout LAYOUT = MemoryLayout.ofStruct(
+			C_SHORT.withName("family"),
+			MemoryLayout.ofValueBits(112, ByteOrder.nativeOrder()).withName("zero")
+		);
+
+		public static final VarHandle family = LAYOUT.varHandle(short.class, groupElement("family"));
+	}
+	
+	public static final class sockaddr_in
+	{
+		public static final MemoryLayout LAYOUT = MemoryLayout.ofStruct(
+			C_SHORT.withName("family"),
+			C_SHORT.withName("port"),
+			in_addr.LAYOUT.withName("addr"),
+			MemoryLayout.ofValueBits(64, ByteOrder.nativeOrder()).withName("zero")
+		);
+
+		public static final VarHandle family = LAYOUT.varHandle(short.class, groupElement("family"));
+
+		public static final VarHandle port = LAYOUT.varHandle(short.class, groupElement("port"));
+		
+		public static final VarHandle addr = LAYOUT.varHandle(MemorySegment.class, groupElement("addr"));
+	}
+	
+	public static final class sockaddr_in6
+	{
+		public static final MemoryLayout LAYOUT = MemoryLayout.ofStruct(
+			C_SHORT.withName("family"),
+			C_SHORT.withName("port"),
+			C_LONG.withName("flowinfo"),
+			in6_addr.LAYOUT.withName("addr"),
+			C_LONG.withName("scope_id")
+		);
+
+		public static final VarHandle family = LAYOUT.varHandle(short.class, groupElement("family"));
+
+		public static final VarHandle port = LAYOUT.varHandle(short.class, groupElement("port"));
+
+		public static final VarHandle flowInfo = LAYOUT.varHandle(int.class, groupElement("flowinfo"));
+		
+		public static final VarHandle addr = LAYOUT.varHandle(MemorySegment.class, groupElement("addr"));
+
+		public static final VarHandle scopeId = LAYOUT.varHandle(int.class, groupElement("scope_id"));
+	}
+	
+	public static final class sockaddr_storage
+	{
+		public static final MemoryLayout LAYOUT = MemoryLayout.ofStruct(
+			C_SHORT.withName("family"),
+			MemoryLayout.ofValueBits(1008, ByteOrder.nativeOrder()).withName("zero")
+		);
+
+		public static final VarHandle family = LAYOUT.varHandle(short.class, groupElement("family"));
+	}
+	
 	// methods
 	
 	public static final MethodHandle bind;
@@ -76,6 +152,8 @@ public final class Ws2_32
 	public static final MethodHandle freeaddrinfo;
 	
 	public static final MethodHandle getaddrinfo;
+	
+	public static final MethodHandle getnameinfo;
 	
 	public static final MethodHandle listen;
 	
@@ -109,6 +187,12 @@ public final class Ws2_32
     		library.lookup("getaddrinfo").get(),
 			MethodType.methodType(int.class, MemoryAddress.class, MemoryAddress.class, MemoryAddress.class, MemoryAddress.class),
 			FunctionDescriptor.of(C_INT, C_POINTER, C_POINTER, C_POINTER, C_POINTER)
+		);
+		
+    	getnameinfo = linker.downcallHandle(
+    		library.lookup("getnameinfo").get(),
+			MethodType.methodType(int.class, MemoryAddress.class, int.class, MemoryAddress.class, int.class, MemoryAddress.class, int.class, int.class),
+			FunctionDescriptor.of(C_INT, C_POINTER, C_INT, C_POINTER, C_INT, C_POINTER, C_INT, C_INT)
 		);
 
 		listen = linker.downcallHandle(
