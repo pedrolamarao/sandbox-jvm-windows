@@ -12,6 +12,7 @@ import java.lang.invoke.MethodType;
 import java.lang.invoke.VarHandle;
 import java.nio.ByteOrder;
 
+import br.dev.pedrolamarao.windows.Kernel32.OVERLAPPED;
 import jdk.incubator.foreign.CLinker;
 import jdk.incubator.foreign.FunctionDescriptor;
 import jdk.incubator.foreign.GroupLayout;
@@ -164,6 +165,8 @@ public final class Ws2_32
 	
 	public static final MethodHandle WSAGetLastError;
 	
+	public static final MethodHandle WSAGetOverlappedResult;
+	
 	static
 	{
     	final var library = LibraryLookup.ofLibrary("Ws2_32");
@@ -222,6 +225,12 @@ public final class Ws2_32
 			library.lookup("WSAGetLastError").get(),
 			MethodType.methodType(int.class),
 			FunctionDescriptor.of(C_INT)
+		);
+
+		WSAGetOverlappedResult = linker.downcallHandle(
+			library.lookup("WSAGetLastError").get(),
+			MethodType.methodType(int.class, int.class, MemorySegment.class, MemoryAddress.class, int.class, MemoryAddress.class),
+			FunctionDescriptor.of(C_INT, C_INT, OVERLAPPED.LAYOUT, C_POINTER, C_INT, C_POINTER)
 		);
 	}
 }
