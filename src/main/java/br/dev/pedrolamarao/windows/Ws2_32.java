@@ -92,7 +92,7 @@ public final class Ws2_32
 	{
 		public static final GroupLayout LAYOUT = MemoryLayout.ofStruct(
 			C_SHORT.withName("family"),
-			MemoryLayout.ofValueBits(112, ByteOrder.nativeOrder()).withName("zero")
+			MemoryLayout.ofPaddingBits(112)
 		);
 
 		public static final VarHandle family = LAYOUT.varHandle(short.class, groupElement("family"));
@@ -104,7 +104,7 @@ public final class Ws2_32
 			C_SHORT.withName("family"),
 			C_SHORT.withName("port"),
 			in_addr.LAYOUT.withName("addr"),
-			MemoryLayout.ofValueBits(64, ByteOrder.nativeOrder()).withName("zero")
+			MemoryLayout.ofPaddingBits(64)
 		);
 
 		public static final VarHandle family = LAYOUT.varHandle(short.class, groupElement("family"));
@@ -137,7 +137,7 @@ public final class Ws2_32
 	{
 		public static final GroupLayout LAYOUT = MemoryLayout.ofStruct(
 			C_SHORT.withName("family"),
-			MemoryLayout.ofValueBits(1008, ByteOrder.nativeOrder()).withName("zero")
+			MemoryLayout.ofPaddingBits(1008)
 		);
 
 		public static final VarHandle family = LAYOUT.varHandle(short.class, groupElement("family"));
