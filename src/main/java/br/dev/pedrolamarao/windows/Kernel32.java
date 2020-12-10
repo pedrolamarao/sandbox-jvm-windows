@@ -19,7 +19,6 @@ import jdk.incubator.foreign.GroupLayout;
 import jdk.incubator.foreign.LibraryLookup;
 import jdk.incubator.foreign.MemoryAddress;
 import jdk.incubator.foreign.MemoryLayout;
-import jdk.incubator.foreign.MemorySegment;
 
 public final class Kernel32
 {
@@ -171,8 +170,8 @@ public final class Kernel32
 		
 		getOverlappedResultEx = linker.downcallHandle(
 			kernel32.lookup("GetOverlappedResultEx").get(),
-			methodType(int.class, MemoryAddress.class, MemorySegment.class, MemoryAddress.class, int.class, int.class),
-			FunctionDescriptor.of(C_INT, C_POINTER, OVERLAPPED.LAYOUT, C_POINTER, C_INT, C_INT)
+			methodType(int.class, MemoryAddress.class, MemoryAddress.class, MemoryAddress.class, int.class, int.class),
+			FunctionDescriptor.of(C_INT, C_POINTER, C_POINTER, C_POINTER, C_INT, C_INT)
 		);
 
 		getQueuedCompletionStatus = linker.downcallHandle(

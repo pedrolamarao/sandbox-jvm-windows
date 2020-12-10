@@ -12,14 +12,12 @@ import java.lang.invoke.MethodType;
 import java.lang.invoke.VarHandle;
 import java.nio.ByteOrder;
 
-import br.dev.pedrolamarao.windows.Kernel32.OVERLAPPED;
 import jdk.incubator.foreign.CLinker;
 import jdk.incubator.foreign.FunctionDescriptor;
 import jdk.incubator.foreign.GroupLayout;
 import jdk.incubator.foreign.LibraryLookup;
 import jdk.incubator.foreign.MemoryAddress;
 import jdk.incubator.foreign.MemoryLayout;
-import jdk.incubator.foreign.MemorySegment;
 import jdk.incubator.foreign.ValueLayout;
 
 public final class Ws2_32
@@ -193,8 +191,8 @@ public final class Ws2_32
 		
     	getaddrinfo = linker.downcallHandle(
     		library.lookup("getaddrinfo").get(),
-			MethodType.methodType(int.class, MemoryAddress.class, MemoryAddress.class, MemorySegment.class, MemoryAddress.class),
-			FunctionDescriptor.of(C_INT, C_POINTER, C_POINTER, addrinfo.LAYOUT, C_POINTER)
+			MethodType.methodType(int.class, MemoryAddress.class, MemoryAddress.class, MemoryAddress.class, MemoryAddress.class),
+			FunctionDescriptor.of(C_INT, C_POINTER, C_POINTER, C_POINTER, C_POINTER)
 		);
 		
     	getnameinfo = linker.downcallHandle(
@@ -229,8 +227,8 @@ public final class Ws2_32
 
 		WSAGetOverlappedResult = linker.downcallHandle(
 			library.lookup("WSAGetLastError").get(),
-			MethodType.methodType(int.class, int.class, MemorySegment.class, MemoryAddress.class, int.class, MemoryAddress.class),
-			FunctionDescriptor.of(C_INT, C_INT, OVERLAPPED.LAYOUT, C_POINTER, C_INT, C_POINTER)
+			MethodType.methodType(int.class, int.class, MemoryAddress.class, MemoryAddress.class, int.class, MemoryAddress.class),
+			FunctionDescriptor.of(C_INT, C_INT, C_POINTER, C_POINTER, C_INT, C_POINTER)
 		);
 	}
 }
