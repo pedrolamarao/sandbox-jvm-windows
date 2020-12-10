@@ -45,9 +45,15 @@ public final class Ws2_32
 	
 	public static final int NI_NUMERICSERV = 0x08;
 
+	public static final int SO_DEBUG = 0x0001;
+
+	public static final int SO_UPDATE_ACCEPT_CONTEXT = 0x700B;
+	
 	public static final int SOCK_STREAM = 1;
 
 	public static final int SOCK_DGRAM = 2;
+	
+	public static final int SOL_SOCKET = 0xFFFF;
 	
 	public static final int WSA_IO_PENDING = 997;
 	
@@ -173,7 +179,9 @@ public final class Ws2_32
 	public static final MethodHandle listen;
 	
 	public static final MethodHandle socket;
-	
+
+	public static final MethodHandle setsockopt;
+		
 	public static final MethodHandle WSAGetLastError;
 	
 	public static final MethodHandle WSAGetOverlappedResult;
@@ -230,6 +238,12 @@ public final class Ws2_32
 			library.lookup("socket").get(),
 			MethodType.methodType(int.class, int.class, int.class, int.class),
 			FunctionDescriptor.of(C_INT, C_INT, C_INT, C_INT)
+		);
+
+		setsockopt = linker.downcallHandle(
+			library.lookup("setsockopt").get(),
+			MethodType.methodType(int.class, int.class, int.class, int.class, MemoryAddress.class, int.class),
+			FunctionDescriptor.of(C_INT, C_INT, C_INT, C_INT, C_POINTER, C_INT)
 		);
 
 		WSAGetLastError = linker.downcallHandle(

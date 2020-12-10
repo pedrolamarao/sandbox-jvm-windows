@@ -153,6 +153,27 @@ public final class Ws2_32Test
 		assertNotEquals(-1, r0);
 	}
 	
+	@Test
+	public void setsockopt () throws Throwable
+	{
+		final var handle = (int) Ws2_32.socket.invokeExact(Ws2_32.AF_INET, Ws2_32.SOCK_STREAM, Ws2_32.IPPROTO_TCP);
+		assertNotEquals(-1, handle);
+		
+		try (var nativeScope = NativeScope.boundedScope(CLinker.C_INT.byteSize()))
+		{
+			final var value = nativeScope.allocate(CLinker.C_INT, 1);
+			assertNotEquals(
+				-1,
+				(int) Ws2_32.setsockopt.invokeExact(handle, Ws2_32.SOL_SOCKET, Ws2_32.SO_DEBUG, value.address(), (int) value.byteSize())
+			);
+		}
+		
+		assertNotEquals(
+			-1,
+			(int) Ws2_32.closesocket.invokeExact(handle)
+		);
+	}
+	
 	public static int networkInt (int value)
 	{
 		return ByteBuffer.allocate(Integer.BYTES).order(ByteOrder.LITTLE_ENDIAN).putInt(0, value).order(ByteOrder.BIG_ENDIAN).getInt(0);
