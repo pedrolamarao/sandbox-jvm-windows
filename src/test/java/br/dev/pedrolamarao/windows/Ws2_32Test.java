@@ -84,7 +84,7 @@ public final class Ws2_32Test
 			service.fill((byte) 0);
 			
 			Ws2_32.sockaddr_in.family.set(address, (short) Ws2_32.AF_INET);
-			Ws2_32.sockaddr_in.port.set(address, networkShort((short) 80));
+			Ws2_32.sockaddr_in.port.set(address, (short) 80);
 			final var r1 = (int) Ws2_32.getnameinfo.invokeExact(address.address(), (int) address.byteSize(), host.address(), (int) host.byteSize(), service.address(), (int) service.byteSize(), (int) (Ws2_32.NI_NUMERICHOST | Ws2_32.NI_NUMERICSERV));
 
 			assertEquals(0, r1);
@@ -96,7 +96,7 @@ public final class Ws2_32Test
 			service.fill((byte) 0);
 			
 			Ws2_32.sockaddr_in.family.set(address, (short) Ws2_32.AF_INET);
-			Ws2_32.sockaddr_in.port.set(address, networkShort((short) 443));
+			Ws2_32.sockaddr_in.port.set(address, (short) 443);
 			Ws2_32.sockaddr_in.addr.set(address, networkInt((1 << 24)));
 			final var r2 = (int) Ws2_32.getnameinfo.invokeExact(address.address(), (int) address.byteSize(), host.address(), (int) host.byteSize(), service.address(), (int) service.byteSize(), (int) (Ws2_32.NI_NUMERICHOST | Ws2_32.NI_NUMERICSERV));
 
@@ -105,7 +105,7 @@ public final class Ws2_32Test
 			assertEquals("443", CLinker.toJavaString(service));
 			
 			Ws2_32.sockaddr_in.family.set(address, (short) Ws2_32.AF_INET);
-			Ws2_32.sockaddr_in.port.set(address, networkShort((short) 12345));
+			Ws2_32.sockaddr_in.port.set(address, (short) 12345);
 			Ws2_32.sockaddr_in.addr.set(address, networkInt((1 << 24) | 0x7F));
 			final var r3 = (int) Ws2_32.getnameinfo.invokeExact(address.address(), (int) address.byteSize(), host.address(), (int) host.byteSize(), service.address(), (int) service.byteSize(), (int) (Ws2_32.NI_NUMERICHOST | Ws2_32.NI_NUMERICSERV));
 
@@ -151,11 +151,6 @@ public final class Ws2_32Test
 		assertNotEquals(-1, handle);
 		final var r0 = (int) Ws2_32.closesocket.invokeExact(handle);
 		assertNotEquals(-1, r0);
-	}
-	
-	public static short networkShort (short value)
-	{
-		return ByteBuffer.allocate(Short.BYTES).order(ByteOrder.LITTLE_ENDIAN).putShort(0, value).order(ByteOrder.BIG_ENDIAN).getShort(0);
 	}
 	
 	public static int networkInt (int value)

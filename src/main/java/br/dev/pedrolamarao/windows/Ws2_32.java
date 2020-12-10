@@ -17,6 +17,7 @@ import jdk.incubator.foreign.FunctionDescriptor;
 import jdk.incubator.foreign.GroupLayout;
 import jdk.incubator.foreign.LibraryLookup;
 import jdk.incubator.foreign.MemoryAddress;
+import jdk.incubator.foreign.MemoryHandles;
 import jdk.incubator.foreign.MemoryLayout;
 import jdk.incubator.foreign.ValueLayout;
 
@@ -109,7 +110,13 @@ public final class Ws2_32
 
 		public static final VarHandle family = LAYOUT.varHandle(short.class, groupElement("family"));
 
-		public static final VarHandle port = LAYOUT.varHandle(short.class, groupElement("port"));
+		public static final VarHandle port;
+		
+		static {
+			final var handle = MemoryHandles.varHandle(short.class, ByteOrder.BIG_ENDIAN);
+			final var offset = LAYOUT.byteOffset(groupElement("port"));
+			port = MemoryHandles.insertCoordinates(handle, 1, offset);			
+		}
 		
 		public static final VarHandle addr = LAYOUT.varHandle(int.class, groupElement("addr"));
 	}
@@ -126,7 +133,13 @@ public final class Ws2_32
 
 		public static final VarHandle family = LAYOUT.varHandle(short.class, groupElement("family"));
 
-		public static final VarHandle port = LAYOUT.varHandle(short.class, groupElement("port"));
+		public static final VarHandle port;
+		
+		static {
+			final var handle = MemoryHandles.varHandle(short.class, ByteOrder.BIG_ENDIAN);
+			final var offset = LAYOUT.byteOffset(groupElement("port"));
+			port = MemoryHandles.insertCoordinates(handle, 1, offset);			
+		}
 
 		public static final VarHandle flowInfo = LAYOUT.varHandle(int.class, groupElement("flowinfo"));
 
