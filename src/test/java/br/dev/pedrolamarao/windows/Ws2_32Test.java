@@ -1,5 +1,8 @@
 package br.dev.pedrolamarao.windows;
 
+import static jdk.incubator.foreign.CLinker.C_INT;
+import static jdk.incubator.foreign.CLinker.C_POINTER;
+import static jdk.incubator.foreign.MemoryAddress.NULL;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 
@@ -47,7 +50,7 @@ public final class Ws2_32Test
 			final var host = CLinker.toCString("localhost", scope);
 			final var service = CLinker.toCString("http");
 			final var hint = scope.allocate(Ws2_32.addrinfo.LAYOUT).fill((byte) 0);
-			final var addressRef = scope.allocate(CLinker.C_POINTER, (long) 0);
+			final var addressRef = scope.allocate(C_POINTER, (long) 0);
 
 			assertEquals(
 				0, 
@@ -160,9 +163,9 @@ public final class Ws2_32Test
 		final var handle = (MemoryAddress) Ws2_32.socket.invokeExact(Ws2_32.AF_INET, Ws2_32.SOCK_STREAM, Ws2_32.IPPROTO_TCP);
 		assertNotEquals(-1, handle);
 		
-		try (var nativeScope = NativeScope.boundedScope(CLinker.C_INT.byteSize()))
+		try (var nativeScope = NativeScope.boundedScope(C_INT.byteSize()))
 		{
-			final var value = nativeScope.allocate(CLinker.C_INT, 1);
+			final var value = nativeScope.allocate(C_INT, 1);
 			assertNotEquals(
 				-1,
 				(int) Ws2_32.setsockopt.invokeExact(handle, Ws2_32.SOL_SOCKET, Ws2_32.SO_DEBUG, value.address(), (int) value.byteSize())
@@ -173,6 +176,38 @@ public final class Ws2_32Test
 			-1,
 			(int) Ws2_32.closesocket.invokeExact(handle)
 		);
+	}
+	
+	@Test
+	public void WSAIoctl () throws Throwable
+	{
+		final var handle = (MemoryAddress) Ws2_32.socket.invokeExact(Ws2_32.AF_INET, Ws2_32.SOCK_STREAM, Ws2_32.IPPROTO_TCP);
+		assertEquals(0, (int) Ws2_32.WSAGetLastError.invokeExact());
+		assertNotEquals(-1, handle.toRawLongValue());
+		
+		try (var nativeScope = NativeScope.unboundedScope())
+		{
+			final var address = nativeScope.allocate(Ws2_32.sockaddr_in.LAYOUT);
+			address.fill((byte) 0);
+			Ws2_32.sockaddr_in.family.set(address, (short) Ws2_32.AF_INET);
+			
+			final var r10 = (int) Ws2_32.bind.invokeExact(handle, address.address(), (int) address.byteSize());
+			assertEquals(0, (int) Ws2_32.WSAGetLastError.invokeExact());
+			assertEquals(0, r10);
+			
+			final var in = nativeScope.allocate(Kernel32.GUID.LAYOUT);
+			Mswsock.WSAID_CONNECTEX.set(in);			
+			final var out = nativeScope.allocate(C_POINTER, (long) 0);
+			final var length = nativeScope.allocate(C_INT, (int) 0);
+			
+			final var r20 = (int) Ws2_32.WSAIoctl.invokeExact(handle, Ws2_32.SIO_GET_EXTENSION_FUNCTION_POINTER, in.address(), (int) in.byteSize(), out.address(), (int) out.byteSize(), length.address(), NULL, NULL);
+			assertEquals(0, (int) Ws2_32.WSAGetLastError.invokeExact());
+			assertEquals(0, r20);
+		}
+		
+		final var r30 = (int) Ws2_32.closesocket.invokeExact(handle);
+		assertEquals(0, (int) Ws2_32.WSAGetLastError.invokeExact());
+		assertEquals(0, r30);
 	}
 	
 	public static int networkInt (int value)

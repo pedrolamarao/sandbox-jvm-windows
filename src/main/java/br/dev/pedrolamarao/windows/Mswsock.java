@@ -5,20 +5,53 @@ import static jdk.incubator.foreign.CLinker.C_INT;
 import static jdk.incubator.foreign.CLinker.C_POINTER;
 
 import java.lang.invoke.MethodHandle;
+import java.lang.invoke.MethodType;
 
+import br.dev.pedrolamarao.windows.Kernel32.GUID;
 import jdk.incubator.foreign.CLinker;
 import jdk.incubator.foreign.FunctionDescriptor;
 import jdk.incubator.foreign.LibraryLookup;
 import jdk.incubator.foreign.MemoryAddress;
+import jdk.incubator.foreign.MemorySegment;
 
 public final class Mswsock
 {
 	// constants
 	
+	public static final class WSAID_CONNECTEX
+	{
+		public static final int data1 = 0x25a207b9;
+		
+		public static final short data2 = (short) 0xddf3;
+		
+		public static final short data3 = (short) 0x4660;
+				
+		public static final byte[] data4 = { (byte) 0x8e, (byte) 0xe9, (byte) 0x76, (byte) 0xe5, (byte) 0x8c, (byte) 0x74, (byte) 0x06, (byte) 0x3e };
+		
+		public static void set (MemorySegment guid)
+		{
+			GUID.data1.set(guid, data1);
+			GUID.data2.set(guid, data2);
+			GUID.data3.set(guid, data3);
+			GUID.data4.set(guid, 0, data4[0]);
+			GUID.data4.set(guid, 1, data4[1]);
+			GUID.data4.set(guid, 2, data4[2]);
+			GUID.data4.set(guid, 3, data4[3]);
+			GUID.data4.set(guid, 4, data4[4]);
+			GUID.data4.set(guid, 5, data4[5]);
+			GUID.data4.set(guid, 6, data4[6]);
+			GUID.data4.set(guid, 7, data4[7]);
+		}
+	}
+	
 	// types
 	
-	// methods
+	public static final MethodType ConnectExType = MethodType.methodType(int.class, MemoryAddress.class, MemoryAddress.class, int.class, MemoryAddress.class, int.class, MemoryAddress.class, MemoryAddress.class);
 	
+	public static final FunctionDescriptor ConnectExDescriptor = FunctionDescriptor.of(C_INT,  C_POINTER, C_POINTER, C_INT, C_POINTER, C_INT, C_POINTER, C_POINTER);
+	
+	// methods
+
 	public static final MethodHandle AcceptEx;
 	
 	static

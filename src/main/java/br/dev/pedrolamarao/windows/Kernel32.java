@@ -3,8 +3,11 @@ package br.dev.pedrolamarao.windows;
 import static java.lang.invoke.MethodType.methodType;
 import static jdk.incubator.foreign.CLinker.C_CHAR;
 import static jdk.incubator.foreign.CLinker.C_INT;
+import static jdk.incubator.foreign.CLinker.C_LONG;
 import static jdk.incubator.foreign.CLinker.C_LONG_LONG;
 import static jdk.incubator.foreign.CLinker.C_POINTER;
+import static jdk.incubator.foreign.CLinker.C_SHORT;
+import static jdk.incubator.foreign.MemoryLayout.ofSequence;
 import static jdk.incubator.foreign.MemoryLayout.ofStruct;
 import static jdk.incubator.foreign.MemoryLayout.ofUnion;
 import static jdk.incubator.foreign.MemoryLayout.PathElement.groupElement;
@@ -19,6 +22,7 @@ import jdk.incubator.foreign.GroupLayout;
 import jdk.incubator.foreign.LibraryLookup;
 import jdk.incubator.foreign.MemoryAddress;
 import jdk.incubator.foreign.MemoryLayout;
+import jdk.incubator.foreign.MemoryLayout.PathElement;
 
 public final class Kernel32
 {
@@ -27,6 +31,8 @@ public final class Kernel32
 	public static final int ERROR_IO_INCOMPLETE = 996;
 	
 	public static final int ERROR_IO_PENDING = 997;
+	
+	public static final int FALSE = 0;
 	
 	public static final int FILE_FLAG_BACKUP_SEMANTICS = 0x02000000;
 	
@@ -44,7 +50,9 @@ public final class Kernel32
 
     public static final MemoryAddress INVALID_HANDLE_VALUE = MemoryAddress.ofLong(-1);
 	
-	public static final int OPEN_EXISTING = 3; 
+	public static final int OPEN_EXISTING = 3;
+	
+	public static final int TRUE = 1;
 	
     public static final int WAIT_TIMEOUT = 258;
     
@@ -66,6 +74,24 @@ public final class Kernel32
     	
     	public static final VarHandle length = LAYOUT.varHandle(int.class, groupElement("length"));
     }
+    
+    public static final class GUID
+    {
+    	public static final MemoryLayout LAYOUT = ofStruct(
+			C_LONG.withName("Data1"),
+			C_SHORT.withName("Data2"),
+			C_SHORT.withName("Data3"),
+			ofSequence(8, C_CHAR).withName("Data4")
+		);
+    	
+    	public static final VarHandle data1 = LAYOUT.varHandle(int.class, groupElement("Data1"));
+    	
+    	public static final VarHandle data2 = LAYOUT.varHandle(short.class, groupElement("Data2"));
+    	
+    	public static final VarHandle data3 = LAYOUT.varHandle(short.class, groupElement("Data3"));
+    	
+    	public static final VarHandle data4 = LAYOUT.varHandle(byte.class, groupElement("Data4"), PathElement.sequenceElement());
+	}
     
     public static final class OVERLAPPED
     {

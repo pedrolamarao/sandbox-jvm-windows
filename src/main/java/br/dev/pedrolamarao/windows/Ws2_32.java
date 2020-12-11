@@ -33,7 +33,7 @@ public final class Ws2_32
 	
 	public static final int AI_PASSIVE = 0x01;
 	
-	public static final int INVALID_SOCKET = 0xFFFFFFFF;
+	public static final MemoryAddress INVALID_SOCKET = MemoryAddress.ofLong(0xFFFFFFFF);
 
 	public static final int IPPROTO_ICMP = 1;
 
@@ -44,6 +44,8 @@ public final class Ws2_32
 	public static final int NI_NUMERICHOST = 0x02;
 	
 	public static final int NI_NUMERICSERV = 0x08;
+	
+	public static final int SIO_GET_EXTENSION_FUNCTION_POINTER = (0x80000000 | 0x40000000 | 0x08000000 | 6);
 
 	public static final int SO_DEBUG = 0x0001;
 
@@ -181,6 +183,8 @@ public final class Ws2_32
 	
 	public static final MethodHandle getsockname;
 	
+	public static final MethodHandle getsockopt;
+	
 	public static final MethodHandle listen;
 	
 	public static final MethodHandle socket;
@@ -190,6 +194,8 @@ public final class Ws2_32
 	public static final MethodHandle WSAGetLastError;
 	
 	public static final MethodHandle WSAGetOverlappedResult;
+	
+	public static final MethodHandle WSAIoctl;
 	
 	static
 	{
@@ -233,6 +239,12 @@ public final class Ws2_32
 			FunctionDescriptor.of(C_INT, C_POINTER, C_INT)
 		);
 
+		getsockopt = linker.downcallHandle(
+			library.lookup("getsockopt").get(),
+			MethodType.methodType(int.class, MemoryAddress.class, int.class, int.class, MemoryAddress.class, MemoryAddress.class),
+			FunctionDescriptor.of(C_INT, C_POINTER, C_INT, C_INT, C_POINTER, C_POINTER)
+		);
+
 		listen = linker.downcallHandle(
 			library.lookup("listen").get(),
 			MethodType.methodType(int.class, MemoryAddress.class, int.class),
@@ -261,6 +273,12 @@ public final class Ws2_32
 			library.lookup("WSAGetOverlappedResult").get(),
 			MethodType.methodType(int.class, int.class, MemoryAddress.class, MemoryAddress.class, int.class, MemoryAddress.class),
 			FunctionDescriptor.of(C_INT, C_INT, C_POINTER, C_POINTER, C_INT, C_POINTER)
+		);
+
+		WSAIoctl = linker.downcallHandle(
+			library.lookup("WSAIoctl").get(),
+			MethodType.methodType(int.class, MemoryAddress.class, int.class, MemoryAddress.class, int.class, MemoryAddress.class, int.class, MemoryAddress.class, MemoryAddress.class, MemoryAddress.class),
+			FunctionDescriptor.of(C_INT, C_POINTER, C_INT, C_POINTER, C_INT, C_POINTER, C_INT, C_POINTER, C_POINTER, C_POINTER)
 		);
 	}
 }
