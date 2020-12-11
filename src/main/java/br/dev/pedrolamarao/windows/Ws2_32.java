@@ -162,6 +162,11 @@ public final class Ws2_32
 		public static final VarHandle family = LAYOUT.varHandle(short.class, groupElement("family"));
 	}
 	
+	public static final class SOCKET
+	{
+		public static final ValueLayout LAYOUT = CLinker.C_LONG_LONG;
+	}
+	
 	// methods
 	
 	public static final MethodHandle bind;
@@ -194,14 +199,14 @@ public final class Ws2_32
 
 		bind = linker.downcallHandle(
 			library.lookup("bind").get(),
-			MethodType.methodType(int.class, int.class, MemoryAddress.class, int.class),
-			FunctionDescriptor.of(C_INT, C_INT, C_POINTER, C_INT)
+			MethodType.methodType(int.class, MemoryAddress.class, MemoryAddress.class, int.class),
+			FunctionDescriptor.of(C_INT, C_POINTER, C_POINTER, C_INT)
 		);
 
 		closesocket = linker.downcallHandle(
 			library.lookup("closesocket").get(),
-			MethodType.methodType(int.class, int.class),
-			FunctionDescriptor.of(C_INT, C_INT)
+			MethodType.methodType(int.class, MemoryAddress.class),
+			FunctionDescriptor.of(C_INT, C_POINTER)
 		);
 
     	freeaddrinfo = linker.downcallHandle(
@@ -230,20 +235,20 @@ public final class Ws2_32
 
 		listen = linker.downcallHandle(
 			library.lookup("listen").get(),
-			MethodType.methodType(int.class, int.class, int.class),
-			FunctionDescriptor.of(C_INT, C_INT, C_INT)
+			MethodType.methodType(int.class, MemoryAddress.class, int.class),
+			FunctionDescriptor.of(C_INT, C_POINTER, C_INT)
 		);
 
 		socket = linker.downcallHandle(
 			library.lookup("socket").get(),
-			MethodType.methodType(int.class, int.class, int.class, int.class),
-			FunctionDescriptor.of(C_INT, C_INT, C_INT, C_INT)
+			MethodType.methodType(MemoryAddress.class, int.class, int.class, int.class),
+			FunctionDescriptor.of(C_POINTER, C_INT, C_INT, C_INT)
 		);
 
 		setsockopt = linker.downcallHandle(
 			library.lookup("setsockopt").get(),
-			MethodType.methodType(int.class, int.class, int.class, int.class, MemoryAddress.class, int.class),
-			FunctionDescriptor.of(C_INT, C_INT, C_INT, C_INT, C_POINTER, C_INT)
+			MethodType.methodType(int.class, MemoryAddress.class, int.class, int.class, MemoryAddress.class, int.class),
+			FunctionDescriptor.of(C_INT, C_POINTER, C_INT, C_INT, C_POINTER, C_INT)
 		);
 
 		WSAGetLastError = linker.downcallHandle(

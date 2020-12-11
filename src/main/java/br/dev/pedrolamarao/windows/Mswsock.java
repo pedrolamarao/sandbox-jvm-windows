@@ -29,8 +29,8 @@ public final class Mswsock
 
 		AcceptEx = linker.downcallHandle(
 			library.lookup("AcceptEx").get(),
-			methodType(int.class, int.class, int.class, MemoryAddress.class, int.class, int.class, int.class, MemoryAddress.class, MemoryAddress.class),
-			FunctionDescriptor.of(C_INT, C_INT, C_INT, C_POINTER, C_INT, C_INT, C_INT, C_POINTER, C_POINTER)
+			methodType(int.class, MemoryAddress.class, MemoryAddress.class, MemoryAddress.class, int.class, int.class, int.class, MemoryAddress.class, MemoryAddress.class),
+			FunctionDescriptor.of(C_INT, C_POINTER, C_POINTER, C_POINTER, C_INT, C_INT, C_INT, C_POINTER, C_POINTER)
 		);
 	}
 }

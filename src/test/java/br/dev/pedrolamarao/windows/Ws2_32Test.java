@@ -10,6 +10,7 @@ import org.junit.jupiter.api.Test;
 
 import jdk.incubator.foreign.CLinker;
 import jdk.incubator.foreign.MemoryAccess;
+import jdk.incubator.foreign.MemoryAddress;
 import jdk.incubator.foreign.NativeScope;
 
 public final class Ws2_32Test
@@ -23,7 +24,7 @@ public final class Ws2_32Test
 			address.fill((byte) 0);
 			Ws2_32.sockaddr_in.family.set(address, (short) Ws2_32.AF_INET);
 			
-			final var handle = (int) Ws2_32.socket.invokeExact(Ws2_32.AF_INET, Ws2_32.SOCK_STREAM, Ws2_32.IPPROTO_TCP);
+			final var handle = (MemoryAddress) Ws2_32.socket.invokeExact(Ws2_32.AF_INET, Ws2_32.SOCK_STREAM, Ws2_32.IPPROTO_TCP);
 			assertNotEquals(-1, handle);
 			
 			assertEquals(
@@ -124,7 +125,7 @@ public final class Ws2_32Test
 			address.fill((byte) 0);
 			Ws2_32.sockaddr_in.family.set(address, (short) Ws2_32.AF_INET);
 			
-			final var handle = (int) Ws2_32.socket.invokeExact(Ws2_32.AF_INET, Ws2_32.SOCK_STREAM, Ws2_32.IPPROTO_TCP);
+			final var handle = (MemoryAddress) Ws2_32.socket.invokeExact(Ws2_32.AF_INET, Ws2_32.SOCK_STREAM, Ws2_32.IPPROTO_TCP);
 			assertNotEquals(-1, handle);
 			
 			assertEquals(
@@ -147,7 +148,7 @@ public final class Ws2_32Test
 	@Test
 	public void socket () throws Throwable
 	{
-		final var handle = (int) Ws2_32.socket.invokeExact(Ws2_32.AF_INET, Ws2_32.SOCK_STREAM, Ws2_32.IPPROTO_TCP);
+		final var handle = (MemoryAddress) Ws2_32.socket.invokeExact(Ws2_32.AF_INET, Ws2_32.SOCK_STREAM, Ws2_32.IPPROTO_TCP);
 		assertNotEquals(-1, handle);
 		final var r0 = (int) Ws2_32.closesocket.invokeExact(handle);
 		assertNotEquals(-1, r0);
@@ -156,7 +157,7 @@ public final class Ws2_32Test
 	@Test
 	public void setsockopt () throws Throwable
 	{
-		final var handle = (int) Ws2_32.socket.invokeExact(Ws2_32.AF_INET, Ws2_32.SOCK_STREAM, Ws2_32.IPPROTO_TCP);
+		final var handle = (MemoryAddress) Ws2_32.socket.invokeExact(Ws2_32.AF_INET, Ws2_32.SOCK_STREAM, Ws2_32.IPPROTO_TCP);
 		assertNotEquals(-1, handle);
 		
 		try (var nativeScope = NativeScope.boundedScope(CLinker.C_INT.byteSize()))

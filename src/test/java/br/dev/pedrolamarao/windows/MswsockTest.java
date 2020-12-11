@@ -6,6 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import org.junit.jupiter.api.Test;
 
 import jdk.incubator.foreign.CLinker;
+import jdk.incubator.foreign.MemoryAddress;
 import jdk.incubator.foreign.NativeScope;
 
 public final class MswsockTest
@@ -19,7 +20,7 @@ public final class MswsockTest
 			address.fill((byte) 0);
 			Ws2_32.sockaddr_in.family.set(address, (short) Ws2_32.AF_INET);
 			
-			final var port = (int) Ws2_32.socket.invokeExact(Ws2_32.AF_INET, Ws2_32.SOCK_STREAM, Ws2_32.IPPROTO_TCP);
+			final var port = (MemoryAddress) Ws2_32.socket.invokeExact(Ws2_32.AF_INET, Ws2_32.SOCK_STREAM, Ws2_32.IPPROTO_TCP);
 			assertNotEquals(-1, port);
 			
 			assertEquals(
@@ -32,7 +33,7 @@ public final class MswsockTest
 				(int) Ws2_32.listen.invokeExact(port, 0)
 			);
 			
-			final var link = (int) Ws2_32.socket.invokeExact(Ws2_32.AF_INET, Ws2_32.SOCK_STREAM, Ws2_32.IPPROTO_TCP);
+			final var link = (MemoryAddress) Ws2_32.socket.invokeExact(Ws2_32.AF_INET, Ws2_32.SOCK_STREAM, Ws2_32.IPPROTO_TCP);
 			assertNotEquals(-1, link);
 			
 			final var operation = scope.allocate(Kernel32.OVERLAPPED.LAYOUT).fill((byte) 0);
