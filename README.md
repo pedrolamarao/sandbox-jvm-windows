@@ -1,8 +1,8 @@
-Date: 2020-11-27
+Date: 2020-12-11
 
 # Summary
 
-This project provides an experimental foreign function interface to Windows' API.
+This project provides an experimental Java foreign function interface to Windows' API.
 
 # Build
 

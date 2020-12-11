@@ -1,4 +1,4 @@
-package br.dev.pedrolamarao.windows;
+package br.dev.pedrolamarao.java.foreign.windows;
 
 import static java.lang.invoke.MethodType.methodType;
 import static jdk.incubator.foreign.CLinker.C_INT;
@@ -7,7 +7,7 @@ import static jdk.incubator.foreign.CLinker.C_POINTER;
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodType;
 
-import br.dev.pedrolamarao.windows.Kernel32.GUID;
+import br.dev.pedrolamarao.java.foreign.windows.Kernel32.GUID;
 import jdk.incubator.foreign.CLinker;
 import jdk.incubator.foreign.FunctionDescriptor;
 import jdk.incubator.foreign.LibraryLookup;

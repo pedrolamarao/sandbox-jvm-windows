@@ -1,9 +1,9 @@
 package br.dev.pedrolamarao.windows;
 
-import static br.dev.pedrolamarao.windows.Kernel32.FILE_SHARE_READ;
-import static br.dev.pedrolamarao.windows.Kernel32.GENERIC_READ;
-import static br.dev.pedrolamarao.windows.Kernel32.INVALID_HANDLE_VALUE;
-import static br.dev.pedrolamarao.windows.Kernel32.OPEN_EXISTING;
+import static br.dev.pedrolamarao.java.foreign.windows.Kernel32.FILE_SHARE_READ;
+import static br.dev.pedrolamarao.java.foreign.windows.Kernel32.GENERIC_READ;
+import static br.dev.pedrolamarao.java.foreign.windows.Kernel32.INVALID_HANDLE_VALUE;
+import static br.dev.pedrolamarao.java.foreign.windows.Kernel32.OPEN_EXISTING;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static jdk.incubator.foreign.CLinker.C_INT;
 import static jdk.incubator.foreign.CLinker.C_POINTER;
@@ -18,6 +18,7 @@ import java.nio.file.Path;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
+import br.dev.pedrolamarao.java.foreign.windows.Kernel32;
 import jdk.incubator.foreign.CLinker;
 import jdk.incubator.foreign.MemoryAccess;
 import jdk.incubator.foreign.MemoryAddress;

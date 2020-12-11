@@ -1,4 +1,4 @@
-package br.dev.pedrolamarao.windows;
+package br.dev.pedrolamarao.java.foreign.windows;
 
 import static java.lang.invoke.MethodType.methodType;
 import static jdk.incubator.foreign.CLinker.C_CHAR;

@@ -11,6 +11,9 @@ import java.nio.ByteOrder;
 
 import org.junit.jupiter.api.Test;
 
+import br.dev.pedrolamarao.java.foreign.windows.Kernel32;
+import br.dev.pedrolamarao.java.foreign.windows.Mswsock;
+import br.dev.pedrolamarao.java.foreign.windows.Ws2_32;
 import jdk.incubator.foreign.CLinker;
 import jdk.incubator.foreign.MemoryAccess;
 import jdk.incubator.foreign.MemoryAddress;
