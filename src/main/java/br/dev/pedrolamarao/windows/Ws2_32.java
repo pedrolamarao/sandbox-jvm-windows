@@ -57,6 +57,8 @@ public final class Ws2_32
 	
 	public static final int SOL_SOCKET = 0xFFFF;
 	
+	public static final int SOMAXCONN = 0x7fffffff;
+	
 	public static final int WSA_IO_PENDING = 997;
 	
 	// types
