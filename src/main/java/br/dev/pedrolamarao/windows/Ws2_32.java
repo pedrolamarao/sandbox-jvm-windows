@@ -253,7 +253,7 @@ public final class Ws2_32
 		);
 
 		WSAGetOverlappedResult = linker.downcallHandle(
-			library.lookup("WSAGetLastError").get(),
+			library.lookup("WSAGetOverlappedResult").get(),
 			MethodType.methodType(int.class, int.class, MemoryAddress.class, MemoryAddress.class, int.class, MemoryAddress.class),
 			FunctionDescriptor.of(C_INT, C_INT, C_POINTER, C_POINTER, C_INT, C_POINTER)
 		);
