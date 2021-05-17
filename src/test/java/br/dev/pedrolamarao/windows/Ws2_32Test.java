@@ -17,16 +17,17 @@ import br.dev.pedrolamarao.java.foreign.windows.Ws2_32;
 import jdk.incubator.foreign.CLinker;
 import jdk.incubator.foreign.MemoryAccess;
 import jdk.incubator.foreign.MemoryAddress;
-import jdk.incubator.foreign.NativeScope;
+import jdk.incubator.foreign.MemorySegment;
+import jdk.incubator.foreign.ResourceScope;
 
 public final class Ws2_32Test
 {
 	@Test
 	public void bind () throws Throwable
 	{
-		try (var scope = NativeScope.unboundedScope())
+		try (var scope = ResourceScope.newConfinedScope())
 		{
-			final var address = scope.allocate(Ws2_32.sockaddr_in.LAYOUT);
+			final var address = MemorySegment.allocateNative(Ws2_32.sockaddr_in.LAYOUT, scope);
 			address.fill((byte) 0);
 			Ws2_32.sockaddr_in.family.set(address, (short) Ws2_32.AF_INET);
 			
@@ -48,12 +49,12 @@ public final class Ws2_32Test
 	@Test
 	public void getaddrinfo () throws Throwable
 	{
-		try (var scope = NativeScope.unboundedScope())
+		try (var scope = ResourceScope.newConfinedScope())
 		{
 			final var host = CLinker.toCString("localhost", scope);
-			final var service = CLinker.toCString("http");
-			final var hint = scope.allocate(Ws2_32.addrinfo.LAYOUT).fill((byte) 0);
-			final var addressRef = scope.allocate(C_POINTER, (long) 0);
+			final var service = CLinker.toCString("http", scope);
+			final var hint = MemorySegment.allocateNative(Ws2_32.addrinfo.LAYOUT, scope).fill((byte) 0);
+			final var addressRef = MemorySegment.allocateNative(C_POINTER, scope);
 
 			assertEquals(
 				0, 
@@ -69,11 +70,11 @@ public final class Ws2_32Test
 	@Test
 	public void getnameinfo__sockaddr_in () throws Throwable
 	{
-		try (var scope = NativeScope.unboundedScope())
+		try (var scope = ResourceScope.newConfinedScope())
 		{
-			final var address = scope.allocate(Ws2_32.sockaddr_in.LAYOUT);
-			final var host = scope.allocate(1024);
-			final var service = scope.allocate(1024);
+			final var address = MemorySegment.allocateNative(Ws2_32.sockaddr_in.LAYOUT, scope);
+			final var host = MemorySegment.allocateNative(1024, scope);
+			final var service = MemorySegment.allocateNative(1024, scope);
 			
 			address.fill((byte) 0);
 			host.fill((byte) 0);
@@ -125,9 +126,9 @@ public final class Ws2_32Test
 	@Test
 	public void listen () throws Throwable
 	{
-		try (var scope = NativeScope.unboundedScope())
+		try (var scope = ResourceScope.newConfinedScope())
 		{
-			final var address = scope.allocate(Ws2_32.sockaddr_in.LAYOUT);
+			final var address = MemorySegment.allocateNative(Ws2_32.sockaddr_in.LAYOUT, scope);
 			address.fill((byte) 0);
 			Ws2_32.sockaddr_in.family.set(address, (short) Ws2_32.AF_INET);
 			
@@ -166,9 +167,10 @@ public final class Ws2_32Test
 		final var handle = (MemoryAddress) Ws2_32.socket.invokeExact(Ws2_32.AF_INET, Ws2_32.SOCK_STREAM, Ws2_32.IPPROTO_TCP);
 		assertNotEquals(-1, handle);
 		
-		try (var nativeScope = NativeScope.boundedScope(C_INT.byteSize()))
+		try (var scope = ResourceScope.newConfinedScope())
 		{
-			final var value = nativeScope.allocate(C_INT, 1);
+			final var value = MemorySegment.allocateNative(C_INT, scope);
+			MemoryAccess.setInt(value, 1);
 			assertNotEquals(
 				-1,
 				(int) Ws2_32.setsockopt.invokeExact(handle, Ws2_32.SOL_SOCKET, Ws2_32.SO_DEBUG, value.address(), (int) value.byteSize())
@@ -188,9 +190,9 @@ public final class Ws2_32Test
 		assertEquals(0, (int) Ws2_32.WSAGetLastError.invokeExact());
 		assertNotEquals(-1, handle.toRawLongValue());
 		
-		try (var nativeScope = NativeScope.unboundedScope())
+		try (var scope = ResourceScope.newConfinedScope())
 		{
-			final var address = nativeScope.allocate(Ws2_32.sockaddr_in.LAYOUT);
+			final var address = MemorySegment.allocateNative(Ws2_32.sockaddr_in.LAYOUT, scope);
 			address.fill((byte) 0);
 			Ws2_32.sockaddr_in.family.set(address, (short) Ws2_32.AF_INET);
 			
@@ -198,10 +200,10 @@ public final class Ws2_32Test
 			assertEquals(0, (int) Ws2_32.WSAGetLastError.invokeExact());
 			assertEquals(0, r10);
 			
-			final var in = nativeScope.allocate(Kernel32.GUID.LAYOUT);
+			final var in = MemorySegment.allocateNative(Kernel32.GUID.LAYOUT, scope);
 			Mswsock.WSAID_CONNECTEX.set(in);			
-			final var out = nativeScope.allocate(C_POINTER, (long) 0);
-			final var length = nativeScope.allocate(C_INT, (int) 0);
+			final var out = MemorySegment.allocateNative(C_POINTER, scope);
+			final var length = MemorySegment.allocateNative(C_INT, scope);
 			
 			final var r20 = (int) Ws2_32.WSAIoctl.invokeExact(handle, Ws2_32.SIO_GET_EXTENSION_FUNCTION_POINTER, in.address(), (int) in.byteSize(), out.address(), (int) out.byteSize(), length.address(), NULL, NULL);
 			assertEquals(0, (int) Ws2_32.WSAGetLastError.invokeExact());

@@ -7,9 +7,9 @@ import static jdk.incubator.foreign.CLinker.C_LONG;
 import static jdk.incubator.foreign.CLinker.C_LONG_LONG;
 import static jdk.incubator.foreign.CLinker.C_POINTER;
 import static jdk.incubator.foreign.CLinker.C_SHORT;
-import static jdk.incubator.foreign.MemoryLayout.ofSequence;
-import static jdk.incubator.foreign.MemoryLayout.ofStruct;
-import static jdk.incubator.foreign.MemoryLayout.ofUnion;
+import static jdk.incubator.foreign.MemoryLayout.sequenceLayout;
+import static jdk.incubator.foreign.MemoryLayout.structLayout;
+import static jdk.incubator.foreign.MemoryLayout.unionLayout;
 import static jdk.incubator.foreign.MemoryLayout.PathElement.groupElement;
 
 import java.lang.invoke.MethodHandle;
@@ -19,10 +19,10 @@ import java.lang.invoke.VarHandle;
 import jdk.incubator.foreign.CLinker;
 import jdk.incubator.foreign.FunctionDescriptor;
 import jdk.incubator.foreign.GroupLayout;
-import jdk.incubator.foreign.LibraryLookup;
 import jdk.incubator.foreign.MemoryAddress;
 import jdk.incubator.foreign.MemoryLayout;
 import jdk.incubator.foreign.MemoryLayout.PathElement;
+import jdk.incubator.foreign.SymbolLookup;
 
 public final class Kernel32
 {
@@ -60,7 +60,7 @@ public final class Kernel32
     
     public static final class FILE_NOTIFY_INFORMATION 
     {
-    	public static final GroupLayout LAYOUT = MemoryLayout.ofStruct(
+    	public static final GroupLayout LAYOUT = structLayout(
 			C_INT.withName("next"),
 			C_INT.withName("action"),
 			C_INT.withName("length"),
@@ -77,11 +77,11 @@ public final class Kernel32
     
     public static final class GUID
     {
-    	public static final MemoryLayout LAYOUT = ofStruct(
+    	public static final MemoryLayout LAYOUT = structLayout(
 			C_LONG.withName("Data1"),
 			C_SHORT.withName("Data2"),
 			C_SHORT.withName("Data3"),
-			ofSequence(8, C_CHAR).withName("Data4")
+			sequenceLayout(8, C_CHAR).withName("Data4")
 		);
     	
     	public static final VarHandle data1 = LAYOUT.varHandle(int.class, groupElement("Data1"));
@@ -95,11 +95,11 @@ public final class Kernel32
     
     public static final class OVERLAPPED
     {
-    	public static final GroupLayout LAYOUT = ofStruct(
+    	public static final GroupLayout LAYOUT = structLayout(
 			C_POINTER, 
 			C_POINTER, 
-			ofUnion(
-				ofStruct(
+			unionLayout(
+				structLayout(
 					C_INT.withName("offsetLow"),
 					C_INT.withName("offsetHigh")
 				),
@@ -160,84 +160,86 @@ public final class Kernel32
 
 	static
 	{
-    	final var kernel32 = LibraryLookup.ofLibrary("Kernel32");
+		System.loadLibrary("kernel32");
+		
+		final var loader = SymbolLookup.loaderLookup();
     	
     	final var linker = CLinker.getInstance();
 
 		cancelIoEx = linker.downcallHandle(
-			kernel32.lookup("CancelIoEx").get(),
+			loader.lookup("CancelIoEx").get(),
 			methodType(int.class, MemoryAddress.class, MemoryAddress.class),
 			FunctionDescriptor.of(C_INT, C_POINTER, C_POINTER)
 		);
 
 		closeHandle = linker.downcallHandle(
-			kernel32.lookup("CloseHandle").get(),
+			loader.lookup("CloseHandle").get(),
 			MethodType.methodType(int.class, MemoryAddress.class),
 			FunctionDescriptor.of(C_INT, C_POINTER)
 		);
     	
 		createFileA = linker.downcallHandle(
-			kernel32.lookup("CreateFileA").get(),
+			loader.lookup("CreateFileA").get(),
 			MethodType.methodType(MemoryAddress.class, MemoryAddress.class, int.class, int.class, MemoryAddress.class, int.class, int.class, MemoryAddress.class),
 			FunctionDescriptor.of(C_POINTER, C_POINTER, C_INT, C_INT, C_POINTER, C_INT, C_INT, C_POINTER)
 		);
 
 		createIoCompletionPort = linker.downcallHandle(
-			kernel32.lookup("CreateIoCompletionPort").get(),
+			loader.lookup("CreateIoCompletionPort").get(),
 			methodType(MemoryAddress.class, MemoryAddress.class, MemoryAddress.class, MemoryAddress.class, int.class),
 			FunctionDescriptor.of(C_POINTER, C_POINTER, C_POINTER, C_POINTER, C_INT)
 		);
 		
 		getLastError = linker.downcallHandle(
-			kernel32.lookup("GetLastError").get(),
+			loader.lookup("GetLastError").get(),
 			MethodType.methodType(int.class),
 			FunctionDescriptor.of(C_INT)
 		);
 		
 		getOverlappedResultEx = linker.downcallHandle(
-			kernel32.lookup("GetOverlappedResultEx").get(),
+			loader.lookup("GetOverlappedResultEx").get(),
 			methodType(int.class, MemoryAddress.class, MemoryAddress.class, MemoryAddress.class, int.class, int.class),
 			FunctionDescriptor.of(C_INT, C_POINTER, C_POINTER, C_POINTER, C_INT, C_INT)
 		);
 
 		getQueuedCompletionStatus = linker.downcallHandle(
-			kernel32.lookup("GetQueuedCompletionStatus").get(),
+			loader.lookup("GetQueuedCompletionStatus").get(),
 			methodType(int.class, MemoryAddress.class, MemoryAddress.class, MemoryAddress.class, MemoryAddress.class, int.class),
 			FunctionDescriptor.of(C_INT, C_POINTER, C_POINTER, C_POINTER, C_POINTER, C_INT)
 		);
 
 		lockFileEx = linker.downcallHandle(
-			kernel32.lookup("LockFileEx").get(),
+			loader.lookup("LockFileEx").get(),
 			methodType(int.class, MemoryAddress.class, int.class, int.class, int.class, int.class, MemoryAddress.class),
 			FunctionDescriptor.of(C_INT, C_POINTER, C_INT, C_INT, C_INT, C_INT, C_POINTER)
 		);
 		
 		postQueuedCompletionStatus = linker.downcallHandle(
-			kernel32.lookup("PostQueuedCompletionStatus").get(),
+			loader.lookup("PostQueuedCompletionStatus").get(),
 			methodType(int.class, MemoryAddress.class, int.class, MemoryAddress.class, MemoryAddress.class),
 			FunctionDescriptor.of(C_INT, C_POINTER, C_INT, C_POINTER, C_POINTER)
 		);
 		
 		readDirectoryChangesW = linker.downcallHandle(
-			kernel32.lookup("ReadDirectoryChangesW").get(),
+			loader.lookup("ReadDirectoryChangesW").get(),
 			methodType(int.class, MemoryAddress.class, MemoryAddress.class, int.class, int.class, int.class, MemoryAddress.class, MemoryAddress.class, MemoryAddress.class),
 			FunctionDescriptor.of(C_INT, C_POINTER, C_POINTER, C_INT, C_INT, C_INT, C_POINTER, C_POINTER, C_POINTER)
 		);
 		
 		readDirectoryChangesExW = linker.downcallHandle(
-			kernel32.lookup("ReadDirectoryChangesExW").get(),
+			loader.lookup("ReadDirectoryChangesExW").get(),
 			methodType(int.class, MemoryAddress.class, MemoryAddress.class, int.class, int.class, int.class, MemoryAddress.class, MemoryAddress.class, MemoryAddress.class, int.class),
 			FunctionDescriptor.of(C_INT, C_POINTER, C_POINTER, C_INT, C_INT, C_INT, C_POINTER, C_POINTER, C_POINTER, C_INT)
 		);
 		
 		readFile = linker.downcallHandle(
-			kernel32.lookup("ReadFile").get(),
+			loader.lookup("ReadFile").get(),
 			methodType(int.class, MemoryAddress.class, MemoryAddress.class, int.class, MemoryAddress.class, MemoryAddress.class),
 			FunctionDescriptor.of(C_INT, C_POINTER, C_POINTER, C_INT, C_POINTER, C_POINTER)
 		);
 		
 		readFileEx = linker.downcallHandle(
-			kernel32.lookup("ReadFileEx").get(),
+			loader.lookup("ReadFileEx").get(),
 			methodType(int.class, MemoryAddress.class, MemoryAddress.class, int.class, MemoryAddress.class, MemoryAddress.class),
 			FunctionDescriptor.of(C_INT, C_POINTER, C_POINTER, C_INT, C_POINTER, C_POINTER)
 		);

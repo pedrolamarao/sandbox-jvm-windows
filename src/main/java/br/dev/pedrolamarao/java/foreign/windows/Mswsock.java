@@ -10,9 +10,9 @@ import java.lang.invoke.MethodType;
 import br.dev.pedrolamarao.java.foreign.windows.Kernel32.GUID;
 import jdk.incubator.foreign.CLinker;
 import jdk.incubator.foreign.FunctionDescriptor;
-import jdk.incubator.foreign.LibraryLookup;
 import jdk.incubator.foreign.MemoryAddress;
 import jdk.incubator.foreign.MemorySegment;
+import jdk.incubator.foreign.SymbolLookup;
 
 public final class Mswsock
 {
@@ -56,12 +56,14 @@ public final class Mswsock
 	
 	static
 	{
-    	final var library = LibraryLookup.ofLibrary("Mswsock");
+		System.loadLibrary("mswsock");
+		
+		final var loader = SymbolLookup.loaderLookup();
     	
     	final var linker = CLinker.getInstance();
 
 		AcceptEx = linker.downcallHandle(
-			library.lookup("AcceptEx").get(),
+			loader.lookup("AcceptEx").get(),
 			methodType(int.class, MemoryAddress.class, MemoryAddress.class, MemoryAddress.class, int.class, int.class, int.class, MemoryAddress.class, MemoryAddress.class),
 			FunctionDescriptor.of(C_INT, C_POINTER, C_POINTER, C_POINTER, C_INT, C_INT, C_INT, C_POINTER, C_POINTER)
 		);

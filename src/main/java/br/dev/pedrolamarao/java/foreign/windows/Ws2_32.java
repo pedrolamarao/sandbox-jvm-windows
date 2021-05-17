@@ -5,6 +5,9 @@ import static jdk.incubator.foreign.CLinker.C_LONG;
 import static jdk.incubator.foreign.CLinker.C_LONG_LONG;
 import static jdk.incubator.foreign.CLinker.C_POINTER;
 import static jdk.incubator.foreign.CLinker.C_SHORT;
+import static jdk.incubator.foreign.MemoryLayout.paddingLayout;
+import static jdk.incubator.foreign.MemoryLayout.structLayout;
+import static jdk.incubator.foreign.MemoryLayout.valueLayout;
 import static jdk.incubator.foreign.MemoryLayout.PathElement.groupElement;
 
 import java.lang.invoke.MethodHandle;
@@ -15,10 +18,9 @@ import java.nio.ByteOrder;
 import jdk.incubator.foreign.CLinker;
 import jdk.incubator.foreign.FunctionDescriptor;
 import jdk.incubator.foreign.GroupLayout;
-import jdk.incubator.foreign.LibraryLookup;
 import jdk.incubator.foreign.MemoryAddress;
 import jdk.incubator.foreign.MemoryHandles;
-import jdk.incubator.foreign.MemoryLayout;
+import jdk.incubator.foreign.SymbolLookup;
 import jdk.incubator.foreign.ValueLayout;
 
 public final class Ws2_32
@@ -65,7 +67,7 @@ public final class Ws2_32
 	
 	public static final class addrinfo
 	{
-		public static final GroupLayout LAYOUT = MemoryLayout.ofStruct(
+		public static final GroupLayout LAYOUT = structLayout(
 			C_INT.withName("flags"),
 			C_INT.withName("family"),
 			C_INT.withName("socktype"),
@@ -91,19 +93,19 @@ public final class Ws2_32
 	
 	public static final class in_addr
 	{
-		public static final ValueLayout LAYOUT = MemoryLayout.ofValueBits(32, ByteOrder.BIG_ENDIAN);
+		public static final ValueLayout LAYOUT = valueLayout(32, ByteOrder.BIG_ENDIAN);
 	}
 	
 	public static final class in6_addr
 	{
-		public static final ValueLayout LAYOUT = MemoryLayout.ofValueBits(128, ByteOrder.BIG_ENDIAN);
+		public static final ValueLayout LAYOUT = valueLayout(128, ByteOrder.BIG_ENDIAN);
 	}
 	
 	public static final class sockaddr
 	{
-		public static final GroupLayout LAYOUT = MemoryLayout.ofStruct(
+		public static final GroupLayout LAYOUT = structLayout(
 			C_SHORT.withName("family"),
-			MemoryLayout.ofPaddingBits(112)
+			paddingLayout(112)
 		);
 
 		public static final VarHandle family = LAYOUT.varHandle(short.class, groupElement("family"));
@@ -111,11 +113,11 @@ public final class Ws2_32
 	
 	public static final class sockaddr_in
 	{
-		public static final GroupLayout LAYOUT = MemoryLayout.ofStruct(
+		public static final GroupLayout LAYOUT = structLayout(
 			C_SHORT.withName("family"),
 			C_SHORT.withName("port"),
 			in_addr.LAYOUT.withName("addr"),
-			MemoryLayout.ofPaddingBits(64)
+			paddingLayout(64)
 		);
 
 		public static final VarHandle family = LAYOUT.varHandle(short.class, groupElement("family"));
@@ -133,7 +135,7 @@ public final class Ws2_32
 	
 	public static final class sockaddr_in6
 	{
-		public static final GroupLayout LAYOUT = MemoryLayout.ofStruct(
+		public static final GroupLayout LAYOUT = structLayout(
 			C_SHORT.withName("family"),
 			C_SHORT.withName("port"),
 			C_LONG.withName("flowinfo"),
@@ -158,9 +160,9 @@ public final class Ws2_32
 	
 	public static final class sockaddr_storage
 	{
-		public static final GroupLayout LAYOUT = MemoryLayout.ofStruct(
+		public static final GroupLayout LAYOUT = structLayout(
 			C_SHORT.withName("family"),
-			MemoryLayout.ofPaddingBits(1008)
+			paddingLayout(1008)
 		);
 
 		public static final VarHandle family = LAYOUT.varHandle(short.class, groupElement("family"));
@@ -201,84 +203,86 @@ public final class Ws2_32
 	
 	static
 	{
-    	final var library = LibraryLookup.ofLibrary("Ws2_32");
+		System.loadLibrary("ws2_32");
+		
+		final var loader = SymbolLookup.loaderLookup();
     	
     	final var linker = CLinker.getInstance();
 
 		bind = linker.downcallHandle(
-			library.lookup("bind").get(),
+			loader.lookup("bind").get(),
 			MethodType.methodType(int.class, MemoryAddress.class, MemoryAddress.class, int.class),
 			FunctionDescriptor.of(C_INT, C_POINTER, C_POINTER, C_INT)
 		);
 
 		closesocket = linker.downcallHandle(
-			library.lookup("closesocket").get(),
+			loader.lookup("closesocket").get(),
 			MethodType.methodType(int.class, MemoryAddress.class),
 			FunctionDescriptor.of(C_INT, C_POINTER)
 		);
 
     	freeaddrinfo = linker.downcallHandle(
-    		library.lookup("freeaddrinfo").get(),
+    		loader.lookup("freeaddrinfo").get(),
 			MethodType.methodType(void.class, MemoryAddress.class),
 			FunctionDescriptor.ofVoid(C_POINTER)
 		);
 		
     	getaddrinfo = linker.downcallHandle(
-    		library.lookup("getaddrinfo").get(),
+    		loader.lookup("getaddrinfo").get(),
 			MethodType.methodType(int.class, MemoryAddress.class, MemoryAddress.class, MemoryAddress.class, MemoryAddress.class),
 			FunctionDescriptor.of(C_INT, C_POINTER, C_POINTER, C_POINTER, C_POINTER)
 		);
 		
     	getnameinfo = linker.downcallHandle(
-    		library.lookup("getnameinfo").get(),
+    		loader.lookup("getnameinfo").get(),
 			MethodType.methodType(int.class, MemoryAddress.class, int.class, MemoryAddress.class, int.class, MemoryAddress.class, int.class, int.class),
 			FunctionDescriptor.of(C_INT, C_POINTER, C_INT, C_POINTER, C_INT, C_POINTER, C_INT, C_INT)
 		);
 		
     	getsockname = linker.downcallHandle(
-    		library.lookup("getnameinfo").get(),
+    		loader.lookup("getnameinfo").get(),
 			MethodType.methodType(int.class, MemoryAddress.class, int.class),
 			FunctionDescriptor.of(C_INT, C_POINTER, C_INT)
 		);
 
 		getsockopt = linker.downcallHandle(
-			library.lookup("getsockopt").get(),
+			loader.lookup("getsockopt").get(),
 			MethodType.methodType(int.class, MemoryAddress.class, int.class, int.class, MemoryAddress.class, MemoryAddress.class),
 			FunctionDescriptor.of(C_INT, C_POINTER, C_INT, C_INT, C_POINTER, C_POINTER)
 		);
 
 		listen = linker.downcallHandle(
-			library.lookup("listen").get(),
+			loader.lookup("listen").get(),
 			MethodType.methodType(int.class, MemoryAddress.class, int.class),
 			FunctionDescriptor.of(C_INT, C_POINTER, C_INT)
 		);
 
 		socket = linker.downcallHandle(
-			library.lookup("socket").get(),
+			loader.lookup("socket").get(),
 			MethodType.methodType(MemoryAddress.class, int.class, int.class, int.class),
 			FunctionDescriptor.of(C_POINTER, C_INT, C_INT, C_INT)
 		);
 
 		setsockopt = linker.downcallHandle(
-			library.lookup("setsockopt").get(),
+			loader.lookup("setsockopt").get(),
 			MethodType.methodType(int.class, MemoryAddress.class, int.class, int.class, MemoryAddress.class, int.class),
 			FunctionDescriptor.of(C_INT, C_POINTER, C_INT, C_INT, C_POINTER, C_INT)
 		);
 
 		WSAGetLastError = linker.downcallHandle(
-			library.lookup("WSAGetLastError").get(),
+			loader.lookup("WSAGetLastError").get(),
 			MethodType.methodType(int.class),
 			FunctionDescriptor.of(C_INT)
 		);
 
 		WSAGetOverlappedResult = linker.downcallHandle(
-			library.lookup("WSAGetOverlappedResult").get(),
+			loader.lookup("WSAGetOverlappedResult").get(),
 			MethodType.methodType(int.class, int.class, MemoryAddress.class, MemoryAddress.class, int.class, MemoryAddress.class),
 			FunctionDescriptor.of(C_INT, C_INT, C_POINTER, C_POINTER, C_INT, C_POINTER)
 		);
 
 		WSAIoctl = linker.downcallHandle(
-			library.lookup("WSAIoctl").get(),
+			loader.lookup("WSAIoctl").get(),
 			MethodType.methodType(int.class, MemoryAddress.class, int.class, MemoryAddress.class, int.class, MemoryAddress.class, int.class, MemoryAddress.class, MemoryAddress.class, MemoryAddress.class),
 			FunctionDescriptor.of(C_INT, C_POINTER, C_INT, C_POINTER, C_INT, C_POINTER, C_INT, C_POINTER, C_POINTER, C_POINTER)
 		);
