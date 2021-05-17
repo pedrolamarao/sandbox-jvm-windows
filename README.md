@@ -1,4 +1,4 @@
-Date: 2020-12-11
+Date: 2021-05-17
 
 # Summary
 
@@ -8,7 +8,7 @@ This project provides an experimental Java foreign function interface to Windows
 
 Requirements:
 
-- JDK 16 early access build 26
+- Recent build from `panama-jextract` branch
 
 Procedure:
 
